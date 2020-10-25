@@ -6,6 +6,7 @@ const fs = require('fs');
 // ultimately makes working with our file system a little more predictable. 
 const path = require('path');
 
+
 const PORT = process.env.PORT || 3001;
 // Instanciates the server
 const app = express();
@@ -13,6 +14,12 @@ const app = express();
 app.use(express.urlencoded({extended: true}));
 // parse incoming JSON data
 app.use(express.json());
+// we provide a file path to a location in our application (in this case, the public folder). 
+// instructs the server to make these files static resources
+// all of our front end code can now be accessed without having a specific server endpoint created for it!
+app.use(express.static('public'));
+
+
 
 function filterByQuery(query, animalsArray){
     let personalityTraitsArray = [];
@@ -54,12 +61,10 @@ function filterByQuery(query, animalsArray){
     }
     return filteredResults;
 };
-
 function findById(id, animalsArray) {
     const result = animalsArray.filter(animal => animal.id === id) [0];
     return result;
 };
-
 // accepts the POST route's res.body value and the array we want to add the data to
 function createNewAnimal(body, animalsArray){
     const animal = body;
@@ -73,7 +78,6 @@ function createNewAnimal(body, animalsArray){
     );
     return animal;
 };
-
 // input validation
 function validateAnimal(animal){
     if(!animal.name || typeof animal.name !== 'string'){
@@ -89,7 +93,8 @@ function validateAnimal(animal){
         return false;
     }
     return true;
-}
+};
+
 
 // API Route
 app.get('/api/animals/', (req, res) => {
@@ -127,6 +132,28 @@ app.post('/api/animals', (req, res) => {
     }
 
 });
+
+
+// '/' brings us to the root route of the server. This route is used to create a homepage for a server
+// This GET route has 1 job and that is to respond the HTML page to display in the browser. 
+app.get('/', (req, res) => {
+    // instead of res.json, we use res.sendFile() and all we have to do is tell them where to find the file we want the server to read and send back to client
+    res.sendFile(path.join(__dirname, './public/index.html'));
+});
+// the above sends the index file to the browser to display. 
+
+// takes us to /animals. Doesn't have /api/animals, because it's not going to an API. Goes to the animal.html. 
+app.get('/animals', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/animals.html'));
+});
+
+app.get('/zookeepers', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/zookeepers.html'));
+});
+
+
+
+
 
 app.listen(PORT, () => {
     console.log(`API server now on port ${PORT}`);
